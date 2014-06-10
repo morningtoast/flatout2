@@ -36,6 +36,15 @@
 		}
 
 
+		function version($name=false, $var="version") {
+			if ($_GET[$var] == $name) {
+				return(true);
+			} else {
+				return(false);
+			}
+		}
+
+
 		function display($templateName, $viewData=false) {
 			echo $this->render($templateName, $viewData);
 		}
