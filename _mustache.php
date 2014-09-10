@@ -1,21 +1,32 @@
 <?php 
+	/*
+		https://github.com/morningtoast/flatout2
+	*/
+
 	require("Mustache/Autoloader.php");
 	Mustache_Autoloader::register();
 
 	class customMustache extends Mustache_Engine {
 		function compile($saveas=false) {
-			$html  = ob_get_contents();
+			$html     = ob_get_contents();
+			$savepath = "output/";
+
 			ob_end_clean();
 
 			if (!$saveas) {
 				$saveas = current(explode(".", basename($_SERVER["PHP_SELF"])));
+			} else {
+				if (strpos($saveas, "/") !== false) {
+					$savepath = $_SERVER["DOCUMENT_ROOT"];
+				}
+
 			}
 
 			if ($_GET["version"]) {
 				$saveas .= "_".$_GET["version"];
 			}
 
-			$savepath = "output/".$saveas.".html";
+			$savepath = $savepath.$saveas.".html";
 
 			// Write HTML			
 			$fr = fopen($savepath, "w");
@@ -24,6 +35,9 @@
 
 			echo $html;
 			echo '<a href="'.$savepath.'" target="preview" style="display:block;font-size:12px;background-color:#E607CB;color:#fff;padding:5px;text-decoration:none;text-align:center;"><code>Runtime version. Click to open compiled HTML address.</code></a>';
+
+
+			return($savepath);
 		}
 
 		function addIndex($list, $keyName="index") {
@@ -35,12 +49,15 @@
 			return($withKeys);
 		}
 
-
 		function version($name=false, $var="version") {
-			if ($_GET[$var] == $name) {
+			if (!$name and !isset($_GET[$var])) {
 				return(true);
 			} else {
-				return(false);
+				if ($_GET[$var] == $name) {
+					return($name);
+				} else {
+					return(false);
+				}
 			}
 		}
 
@@ -53,11 +70,9 @@
 
 	// Create instance
 	$mustache = new customMustache(array(
-		'loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__) . "/templates", array("extension" => ".html"))
+		'loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__) . "/templates", array("extension" => ".html")),
+		'partials_loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__) . "/templates", array("extension" => ".html"))		
 	));
-
-	$included_files = get_included_files();
-
 
 	ob_start();
 ?>
